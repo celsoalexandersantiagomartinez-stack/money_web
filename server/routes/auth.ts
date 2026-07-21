@@ -6,10 +6,11 @@ import { requireAuth, type AuthRequest } from "../middleware/auth.js";
 
 const router = Router();
 
-const JWT_SECRET = process.env.JWT_SECRET;
-if (!JWT_SECRET) {
+const envSecret = process.env.JWT_SECRET;
+if (!envSecret) {
   throw new Error("Falta la variable de entorno JWT_SECRET (revisá tu .env).");
 }
+const JWT_SECRET: string = envSecret;
 
 router.post("/registro", async (req, res) => {
   const { nombre, correo, contrasena } = req.body ?? {};
@@ -55,7 +56,7 @@ router.post("/login", async (req, res) => {
     return res.status(401).json({ error: "Correo o contraseña incorrectos." });
   }
 
-  const token = jwt.sign({ sub: usuario.id }, JWT_SECRET, { expiresIn: "7d" });
+  const token = jwt.sign({ sub: String(usuario.id) }, JWT_SECRET, { expiresIn: "7d" });
 
   return res.json({ token });
 });
