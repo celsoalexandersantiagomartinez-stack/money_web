@@ -212,6 +212,94 @@ igual.
 
 ---
 
+## Ronda extra 6 — Bug real: categorías compartidas entre usuarios
+
+```
+Tengo una web montada en Railway pero tiene un solo error: si un usuario
+crea una categoría de algún gasto, se crea para los demás usuarios
+también, y no puede ser así. Antes de modificar algo, leé el README.md
+y los prompts.
+```
+
+Bug real, no de diseño: `Categoria` nunca tuvo relación con `Usuario` en
+el esquema de Prisma (a diferencia de `Gasto`, que sí estaba bien
+aislado por usuario) ni una restricción de unicidad por usuario, y las
+tres rutas de `/api/categorias` (`GET`, `POST`, `PATCH /:id/color`)
+tampoco filtraban ni validaban por el usuario autenticado. Se agregó
+`Categoria.usuarioId` (con `@@unique([usuarioId, nombre])` en vez de la
+unicidad global anterior), y las tres rutas ahora usan el mismo patrón
+que ya tenía `gastos.ts` (`req.usuarioId`). De paso se cerró un hueco
+relacionado: `POST /api/gastos` no verificaba que la categoría indicada
+perteneciera a quien hacía la petición.
+
+Como la base de datos de Railway es la única que existe (local y
+producción apuntan a la misma), la migración se escribió a mano para
+reasignar sin pérdida de datos las categorías existentes (a la cuenta
+`test@test.com`) y, para los pocos casos de gastos de otra cuenta que ya
+apuntaban a esas categorías compartidas por el bug, crearles una copia
+privada antes de aplicar la restricción de unicidad nueva. La migración
+falló una vez en producción por un orden de pasos incorrecto (se
+detectó, se corrigió y se volvió a aplicar con `prisma migrate resolve
+--rolled-back` + `migrate deploy`, sin pérdida de datos). Luego se
+detectó que el código corregido no se había subido a Git todavía —
+Railway seguía sirviendo el código viejo contra el esquema ya migrado,
+lo que causaba justamente los síntomas reportados después (categorías
+"duplicadas" y no poder crear categorías nuevas). Se hizo commit y push
+del fix, y se verificó en producción con el propio endpoint de la app.
+
+---
+
+## Ronda extra 7 — Datos de prueba
+
+```
+En la cuenta de usuario test@test.com hacé una serie de registros desde
+el día 1/6/2026 hasta el 20/7/2026, con registro diario de 3 o más
+gastos. Los gastos se pueden repetir, como comida, porque las personas
+pueden comer hoy, ayer y mañana.
+```
+
+Se corrió un script puntual (no versionado, solo para poblar datos) que
+generó 179 gastos para `test@test.com` entre esas fechas: 2-3 comidas
+por día (desayuno/almuerzo/cena/snack), transporte casi a diario, y
+apariciones ocasionales de cine, deportes, y recibos mensuales de Luz y
+Cable — usando siempre las categorías propias de esa cuenta.
+
+---
+
+## Ronda extra 8 — Lista de gastos agrupada por día
+
+```
+Arriba ya aparecen los gastos, lo que pasa es que se crea una lista muy
+larga si hay muchos registros y se pierde. ¿Creamos una lista agrupada
+por día, borramos ese apartado, o tenés alguna sugerencia?
+```
+
+Se agrupó la lista por fecha (con el total de cada día como
+encabezado) y el filtro de fechas ahora arranca precargado en el mes
+actual en vez de mostrar todo el historial de una vez; el historial
+completo se sigue pudiendo ver ampliando el rango de fechas.
+
+---
+
+## Ronda extra 9 — Tutorial de ayuda
+
+```
+Como última modificación, agregá un tutorial o ícono de ayuda que
+explique el funcionamiento de la app. Puede ser un botón con forma de
+"?" o el típico triángulo de advertencia, que se destaque hasta el
+primer clic, o con un checkbox de "no mostrar de nuevo" como en los
+avisos comunes. ¿Vos qué opinás?
+```
+
+Se recomendó el ícono "?" en vez del triángulo (ese se asocia a
+error/advertencia, no a ayuda) y un pulso sutil en vez de mover el botón
+por la pantalla. El tutorial se abre solo la primera vez que se inicia
+sesión, con checkbox "no mostrar de nuevo" guardado en `localStorage`,
+y el botón de ayuda queda siempre disponible en el header para
+reabrirlo manualmente.
+
+---
+
 ## Notas para quien quiera repetir este proceso
 
 - Cada fase se probó antes de seguir (con `curl` en el backend, en el
@@ -222,3 +310,8 @@ igual.
 - Ante cualquier bug real (la ruta del frontend compilado, el gráfico
   circular cortado), se dejó que la IA lo investigue y explique la causa
   antes de aplicar el arreglo — no alcanza con "probar de nuevo".
+- Como local y producción comparten la misma base de datos en Railway,
+  cuando un cambio necesita migración: aplicar la migración y subir
+  (commit + push) el código que la usa como un solo paso, no por
+  separado — dejar el código viejo corriendo contra el esquema nuevo (o
+  al revés) rompe la app en producción, como pasó en la Ronda extra 6.

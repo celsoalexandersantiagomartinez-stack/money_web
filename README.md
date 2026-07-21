@@ -1,8 +1,10 @@
 # Money Web — Gestor de Gastos Personales
 
-Proyecto académico: gestor de gastos personales para un solo usuario, web
-(mobile-first), construido con ayuda de IA (Claude Code) y desplegado
-completo (frontend + backend + base de datos) en Railway.
+Proyecto académico: gestor de gastos personales, web (mobile-first),
+construido con ayuda de IA (Claude Code) y desplegado completo (frontend
++ backend + base de datos) en Railway. Cada quien se registra con su
+propia cuenta y ve únicamente sus propios datos (gastos, categorías y
+presupuesto no se comparten entre cuentas).
 
 ## Descripción
 
@@ -11,7 +13,9 @@ Permite registrarte con correo y contraseña, cargar gastos por categoría
 porcentaje que representa cada categoría, definir un presupuesto mensual
 con indicador de cuánto te queda o cuánto te excediste, personalizar el
 color de cada categoría, y ver esos gastos en gráficos (barras por día y
-circular) filtrando por rango de fechas.
+circular) filtrando por rango de fechas. Los gastos se listan agrupados
+por día, y un botón de ayuda ("?") en el encabezado abre en cualquier
+momento un tutorial corto de cómo usar la app.
 
 **Stack:**
 - Frontend: React + Vite + Tailwind CSS (tema oscuro)
@@ -67,6 +71,9 @@ App publicada en Railway: **https://moneyweb-production.up.railway.app**
 Cuenta de prueba:
 - Correo: `test@test.com`
 - Contraseña: `1234`
+- Ya tiene datos de ejemplo cargados (gastos diarios entre el
+  1/6/2026 y el 20/7/2026) para poder ver el resumen, la lista y los
+  gráficos con contenido real sin cargar nada a mano.
 
 ## Documentación del proceso
 
