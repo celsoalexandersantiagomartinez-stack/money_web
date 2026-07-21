@@ -1,8 +1,14 @@
 import { Router } from "express";
 import bcrypt from "bcryptjs";
+import jwt from "jsonwebtoken";
 import { prisma } from "../lib/prisma.js";
 
 const router = Router();
+
+const JWT_SECRET = process.env.JWT_SECRET;
+if (!JWT_SECRET) {
+  throw new Error("Falta la variable de entorno JWT_SECRET (revisá tu .env).");
+}
 
 router.post("/registro", async (req, res) => {
   const { nombre, correo, contrasena } = req.body ?? {};
@@ -29,6 +35,28 @@ router.post("/registro", async (req, res) => {
     nombre: usuario.nombre,
     correo: usuario.correo,
   });
+});
+
+router.post("/login", async (req, res) => {
+  const { correo, contrasena } = req.body ?? {};
+
+  if (!correo || !contrasena) {
+    return res.status(400).json({ error: "Faltan datos: correo y contrasena son obligatorios." });
+  }
+
+  const usuario = await prisma.usuario.findUnique({ where: { correo } });
+  if (!usuario) {
+    return res.status(401).json({ error: "Correo o contraseña incorrectos." });
+  }
+
+  const coincide = await bcrypt.compare(contrasena, usuario.contrasenaHash);
+  if (!coincide) {
+    return res.status(401).json({ error: "Correo o contraseña incorrectos." });
+  }
+
+  const token = jwt.sign({ sub: usuario.id }, JWT_SECRET, { expiresIn: "7d" });
+
+  return res.json({ token });
 });
 
 export default router;
