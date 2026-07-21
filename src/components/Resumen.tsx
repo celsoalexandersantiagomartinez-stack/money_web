@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { apiFetch, ApiError } from "../lib/api";
 import { card, errorBanner, input, buttonPrimary } from "../lib/ui";
 import { colorDeCategoria } from "../lib/colores";
+import { formatMonto } from "../lib/format";
 
 interface ResumenData {
   totalMes: number;
@@ -72,7 +73,7 @@ export default function Resumen({ reloadTrigger }: Props) {
 
       {error && <p className={errorBanner}>{error}</p>}
 
-      <p className="text-2xl font-semibold text-gray-100">${resumen.totalMes.toFixed(2)}</p>
+      <p className="text-2xl font-semibold text-gray-100">${formatMonto(resumen.totalMes)}</p>
 
       <div className="space-y-2">
         {resumen.porCategoria.length === 0 && (
@@ -83,7 +84,7 @@ export default function Resumen({ reloadTrigger }: Props) {
             <div className="flex justify-between text-xs text-gray-400 mb-1">
               <span>{c.categoria}</span>
               <span>
-                ${c.total.toFixed(2)}{" "}
+                ${formatMonto(c.total)}{" "}
                 <span className="text-gray-500">
                   ({resumen.totalMes > 0 ? ((c.total / resumen.totalMes) * 100).toFixed(0) : 0}%)
                 </span>
@@ -128,15 +129,15 @@ export default function Resumen({ reloadTrigger }: Props) {
               />
             </div>
             <p className={`text-xs mt-1 ${excedido ? "text-red-400" : "text-gray-400"}`}>
-              ${resumen.totalMes.toFixed(2)} de ${presupuesto.toFixed(2)}
+              ${formatMonto(resumen.totalMes)} de ${formatMonto(presupuesto)}
             </p>
             <p className={`text-xs font-medium ${excedido ? "text-red-400" : "text-emerald-400"}`}>
               {excedido
-                ? `Te pasaste por $${(resumen.totalMes - presupuesto).toFixed(2)} (${(
+                ? `Te pasaste por $${formatMonto(resumen.totalMes - presupuesto)} (${(
                     ((resumen.totalMes - presupuesto) / presupuesto) *
                     100
                   ).toFixed(0)}% de exceso)`
-                : `Te quedan $${(presupuesto - resumen.totalMes).toFixed(2)} disponibles (${(
+                : `Te quedan $${formatMonto(presupuesto - resumen.totalMes)} disponibles (${(
                     100 - porcentajePresupuesto!
                   ).toFixed(0)}% del presupuesto)`}
             </p>

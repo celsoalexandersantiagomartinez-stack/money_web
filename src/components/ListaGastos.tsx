@@ -3,6 +3,7 @@ import { apiFetch, ApiError } from "../lib/api";
 import type { Categoria, Gasto } from "../lib/types";
 import { card, errorBanner } from "../lib/ui";
 import { colorDeCategoria } from "../lib/colores";
+import { formatMonto } from "../lib/format";
 
 interface Props {
   categorias: Categoria[];
@@ -83,7 +84,7 @@ export default function ListaGastos({ categorias, reloadTrigger }: Props) {
             <div>
               <p className="font-medium text-gray-100 flex items-center gap-2">
                 <span className={`h-2 w-2 rounded-full ${colorDeCategoria(g.categoria.color).dot}`} />
-                ${Number(g.monto).toFixed(2)} — {g.categoria.nombre}
+                ${formatMonto(Number(g.monto))} — {g.categoria.nombre}
               </p>
               <p className="text-xs text-gray-500">
                 {new Date(g.fecha).toLocaleDateString()}

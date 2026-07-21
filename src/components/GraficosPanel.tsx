@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { apiFetch, ApiError } from "../lib/api";
 import { card, errorBanner } from "../lib/ui";
 import { colorDeCategoria } from "../lib/colores";
+import { formatEntero } from "../lib/format";
 
 interface SerieDia {
   fecha: string;
@@ -137,7 +138,7 @@ function GraficoBarras({ serie }: { serie: SerieDia[] }) {
               strokeDasharray={frac === 0 ? undefined : "3 3"}
             />
             <text x={margenIzq - 6} y={y + 3} fontSize={9} fill="#898781" textAnchor="end">
-              ${(maxTotal * frac).toFixed(0)}
+              ${formatEntero(maxTotal * frac)}
             </text>
           </g>
         );
@@ -233,7 +234,7 @@ function GraficoCircular({ serie }: { serie: SerieDia[] }) {
         })}
       </g>
       <text x={cx} y={cy - 6} textAnchor="middle" fontSize={16} fill="#f3f4f6" fontWeight={600}>
-        ${total.toFixed(0)}
+        ${formatEntero(total)}
       </text>
       <text x={cx} y={cy + 12} textAnchor="middle" fontSize={10} fill="#898781">
         total del rango
