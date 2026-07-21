@@ -5,6 +5,7 @@ import { clearToken } from "../lib/auth";
 import type { Categoria } from "../lib/types";
 import FormularioGasto from "../components/FormularioGasto";
 import ListaGastos from "../components/ListaGastos";
+import Resumen from "../components/Resumen";
 
 export default function Dashboard() {
   const navigate = useNavigate();
@@ -35,6 +36,8 @@ export default function Dashboard() {
       </header>
 
       {error && <p className="text-sm text-red-600 bg-red-50 rounded p-2">{error}</p>}
+
+      <Resumen reloadTrigger={reloadTrigger} />
 
       <FormularioGasto
         categorias={categorias}
