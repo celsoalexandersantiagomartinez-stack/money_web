@@ -33,3 +33,17 @@ export function ChartIcon({ className }: IconProps) {
     </svg>
   );
 }
+
+export function HelpIcon({ className }: IconProps) {
+  return (
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2} className={className}>
+      <circle cx="12" cy="12" r="9" />
+      <path
+        d="M9.5 9.3a2.5 2.5 0 0 1 4.85.8c0 1.6-2.2 2-2.35 3.4"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+      />
+      <circle cx="12" cy="17.2" r="0.9" fill="currentColor" stroke="none" />
+    </svg>
+  );
+}

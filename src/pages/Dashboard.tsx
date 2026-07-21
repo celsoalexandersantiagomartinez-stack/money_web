@@ -4,12 +4,16 @@ import { apiFetch, ApiError } from "../lib/api";
 import { clearToken } from "../lib/auth";
 import type { Categoria } from "../lib/types";
 import { errorBanner } from "../lib/ui";
-import { RefreshIcon, SettingsIcon, ChartIcon } from "../components/icons";
+import { RefreshIcon, SettingsIcon, ChartIcon, HelpIcon } from "../components/icons";
 import FormularioGasto from "../components/FormularioGasto";
 import ListaGastos from "../components/ListaGastos";
 import Resumen from "../components/Resumen";
 import ConfiguracionCategorias from "../components/ConfiguracionCategorias";
 import GraficosPanel from "../components/GraficosPanel";
+import AyudaTutorial from "../components/AyudaTutorial";
+
+const AYUDA_NO_MOSTRAR_KEY = "moneyweb_ayuda_no_mostrar";
+const AYUDA_VISTA_KEY = "moneyweb_ayuda_vista";
 
 export default function Dashboard() {
   const navigate = useNavigate();
@@ -18,6 +22,31 @@ export default function Dashboard() {
   const [error, setError] = useState<string | null>(null);
   const [mostrarConfig, setMostrarConfig] = useState(false);
   const [mostrarGraficos, setMostrarGraficos] = useState(false);
+  const [mostrarAyuda, setMostrarAyuda] = useState(false);
+  const [ayudaVistaAlgunaVez, setAyudaVistaAlgunaVez] = useState(
+    () => localStorage.getItem(AYUDA_VISTA_KEY) === "1",
+  );
+
+  function abrirAyuda() {
+    localStorage.setItem(AYUDA_VISTA_KEY, "1");
+    setAyudaVistaAlgunaVez(true);
+    setMostrarAyuda(true);
+  }
+
+  function cerrarAyuda(noMostrarDeNuevo: boolean) {
+    if (noMostrarDeNuevo) {
+      localStorage.setItem(AYUDA_NO_MOSTRAR_KEY, "1");
+    }
+    setMostrarAyuda(false);
+  }
+
+  useEffect(() => {
+    if (localStorage.getItem(AYUDA_NO_MOSTRAR_KEY) !== "1") {
+      abrirAyuda();
+    }
+    // Solo debe ejecutarse una vez al montar el dashboard.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   useEffect(() => {
     apiFetch<Categoria[]>("/categorias")
@@ -43,6 +72,13 @@ export default function Dashboard() {
           Money <span className="text-emerald-400">Web</span>
         </h1>
         <div className="flex items-center gap-3">
+          <button
+            onClick={abrirAyuda}
+            title="Ayuda"
+            className={`text-gray-400 hover:text-gray-100 ${!ayudaVistaAlgunaVez ? "animar-ayuda" : ""}`}
+          >
+            <HelpIcon className="h-5 w-5" />
+          </button>
           <button
             onClick={handleActualizar}
             title="Actualizar"
@@ -96,6 +132,8 @@ export default function Dashboard() {
       )}
 
       {mostrarGraficos && <GraficosPanel onClose={() => setMostrarGraficos(false)} />}
+
+      {mostrarAyuda && <AyudaTutorial onClose={cerrarAyuda} />}
     </div>
   );
 }

@@ -7,3 +7,21 @@
     @apply bg-gray-950 text-gray-100;
   }
 }
+
+@keyframes ayuda-pulso {
+  0%,
+  100% {
+    transform: scale(1);
+    box-shadow: 0 0 0 0 rgba(16, 185, 129, 0.55);
+  }
+  50% {
+    transform: scale(1.18);
+    box-shadow: 0 0 0 5px rgba(16, 185, 129, 0);
+  }
+}
+
+.animar-ayuda {
+  animation: ayuda-pulso 1.8s ease-in-out infinite;
+  border-radius: 9999px;
+  color: rgb(52 211 153);
+}
