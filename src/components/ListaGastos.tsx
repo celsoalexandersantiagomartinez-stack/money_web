@@ -1,11 +1,15 @@
 import { useEffect, useState } from "react";
 import { apiFetch, ApiError } from "../lib/api";
 import type { Categoria, Gasto } from "../lib/types";
+import { card, errorBanner } from "../lib/ui";
 
 interface Props {
   categorias: Categoria[];
   reloadTrigger: number;
 }
+
+const filterInput =
+  "rounded border border-gray-700 bg-gray-900 px-2 py-1 text-xs text-gray-100 focus:outline-none focus:border-emerald-500";
 
 export default function ListaGastos({ categorias, reloadTrigger }: Props) {
   const [gastos, setGastos] = useState<Gasto[]>([]);
@@ -37,16 +41,16 @@ export default function ListaGastos({ categorias, reloadTrigger }: Props) {
   }
 
   return (
-    <div className="bg-white rounded-lg shadow p-4 space-y-3">
-      <h2 className="text-sm font-semibold text-gray-900">Gastos</h2>
+    <div className={`p-4 space-y-3 ${card}`}>
+      <h2 className="text-sm font-semibold text-gray-100">Gastos</h2>
 
-      {error && <p className="text-sm text-red-600 bg-red-50 rounded p-2">{error}</p>}
+      {error && <p className={errorBanner}>{error}</p>}
 
       <div className="flex flex-wrap gap-2">
         <select
           value={categoriaId}
           onChange={(e) => setCategoriaId(e.target.value)}
-          className="rounded border border-gray-300 px-2 py-1 text-xs"
+          className={filterInput}
         >
           <option value="">Todas las categorías</option>
           {categorias.map((c) => (
@@ -59,24 +63,24 @@ export default function ListaGastos({ categorias, reloadTrigger }: Props) {
           type="date"
           value={desde}
           onChange={(e) => setDesde(e.target.value)}
-          className="rounded border border-gray-300 px-2 py-1 text-xs"
+          className={filterInput}
         />
         <input
           type="date"
           value={hasta}
           onChange={(e) => setHasta(e.target.value)}
-          className="rounded border border-gray-300 px-2 py-1 text-xs"
+          className={filterInput}
         />
       </div>
 
-      <ul className="divide-y divide-gray-100">
+      <ul className="divide-y divide-gray-700">
         {gastos.length === 0 && (
           <li className="text-sm text-gray-500 py-2">No hay gastos para mostrar.</li>
         )}
         {gastos.map((g) => (
           <li key={g.id} className="py-2 flex items-center justify-between text-sm">
             <div>
-              <p className="font-medium text-gray-900">
+              <p className="font-medium text-gray-100">
                 ${Number(g.monto).toFixed(2)} — {g.categoria.nombre}
               </p>
               <p className="text-xs text-gray-500">
@@ -84,7 +88,10 @@ export default function ListaGastos({ categorias, reloadTrigger }: Props) {
                 {g.nota ? ` · ${g.nota}` : ""}
               </p>
             </div>
-            <button onClick={() => handleBorrar(g.id)} className="text-xs text-red-600 font-medium">
+            <button
+              onClick={() => handleBorrar(g.id)}
+              className="text-xs text-red-400 hover:text-red-300 font-medium"
+            >
               Borrar
             </button>
           </li>

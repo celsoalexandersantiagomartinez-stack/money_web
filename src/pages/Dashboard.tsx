@@ -3,6 +3,7 @@ import { useNavigate } from "react-router-dom";
 import { apiFetch, ApiError } from "../lib/api";
 import { clearToken } from "../lib/auth";
 import type { Categoria } from "../lib/types";
+import { errorBanner } from "../lib/ui";
 import FormularioGasto from "../components/FormularioGasto";
 import ListaGastos from "../components/ListaGastos";
 import Resumen from "../components/Resumen";
@@ -27,15 +28,17 @@ export default function Dashboard() {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50 p-4 space-y-4">
+    <div className="min-h-screen bg-gray-950 p-4 space-y-4">
       <header className="flex items-center justify-between">
-        <h1 className="text-lg font-semibold text-gray-900">Money Web</h1>
-        <button onClick={handleLogout} className="text-sm text-red-600 font-medium">
+        <h1 className="text-lg font-semibold text-gray-100">
+          Money <span className="text-emerald-400">Web</span>
+        </h1>
+        <button onClick={handleLogout} className="text-sm text-red-400 hover:text-red-300 font-medium">
           Cerrar sesión
         </button>
       </header>
 
-      {error && <p className="text-sm text-red-600 bg-red-50 rounded p-2">{error}</p>}
+      {error && <p className={errorBanner}>{error}</p>}
 
       <Resumen reloadTrigger={reloadTrigger} />
 

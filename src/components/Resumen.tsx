@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import { apiFetch, ApiError } from "../lib/api";
+import { card, errorBanner, input, buttonPrimary } from "../lib/ui";
 
 interface ResumenData {
   totalMes: number;
@@ -55,11 +56,7 @@ export default function Resumen({ reloadTrigger }: Props) {
   }
 
   if (!resumen) {
-    return (
-      <div className="bg-white rounded-lg shadow p-4 text-sm text-gray-500">
-        Cargando resumen...
-      </div>
-    );
+    return <div className={`p-4 text-sm text-gray-500 ${card}`}>Cargando resumen...</div>;
   }
 
   const maxCategoria = Math.max(1, ...resumen.porCategoria.map((c) => c.total));
@@ -69,12 +66,12 @@ export default function Resumen({ reloadTrigger }: Props) {
   const excedido = presupuesto !== null && resumen.totalMes > presupuesto;
 
   return (
-    <div className="bg-white rounded-lg shadow p-4 space-y-4">
-      <h2 className="text-sm font-semibold text-gray-900">Resumen del mes</h2>
+    <div className={`p-4 space-y-4 ${card}`}>
+      <h2 className="text-sm font-semibold text-gray-100">Resumen del mes</h2>
 
-      {error && <p className="text-sm text-red-600 bg-red-50 rounded p-2">{error}</p>}
+      {error && <p className={errorBanner}>{error}</p>}
 
-      <p className="text-2xl font-semibold text-gray-900">${resumen.totalMes.toFixed(2)}</p>
+      <p className="text-2xl font-semibold text-gray-100">${resumen.totalMes.toFixed(2)}</p>
 
       <div className="space-y-2">
         {resumen.porCategoria.length === 0 && (
@@ -82,11 +79,11 @@ export default function Resumen({ reloadTrigger }: Props) {
         )}
         {resumen.porCategoria.map((c) => (
           <div key={c.categoria}>
-            <div className="flex justify-between text-xs text-gray-600 mb-1">
+            <div className="flex justify-between text-xs text-gray-400 mb-1">
               <span>{c.categoria}</span>
               <span>${c.total.toFixed(2)}</span>
             </div>
-            <div className="h-2 bg-gray-100 rounded">
+            <div className="h-2 bg-gray-700 rounded">
               <div
                 className="h-2 bg-blue-500 rounded"
                 style={{ width: `${(c.total / maxCategoria) * 100}%` }}
@@ -96,8 +93,8 @@ export default function Resumen({ reloadTrigger }: Props) {
         ))}
       </div>
 
-      <div className="pt-2 border-t border-gray-100 space-y-2">
-        <label className="block text-xs font-medium text-gray-700">Presupuesto mensual</label>
+      <div className="pt-2 border-t border-gray-700 space-y-2">
+        <label className="block text-xs font-medium text-gray-300">Presupuesto mensual</label>
         <div className="flex gap-2">
           <input
             type="number"
@@ -105,12 +102,12 @@ export default function Resumen({ reloadTrigger }: Props) {
             min="0"
             value={inputPresupuesto}
             onChange={(e) => setInputPresupuesto(e.target.value)}
-            className="flex-1 rounded border border-gray-300 px-3 py-1.5 text-sm"
+            className={`flex-1 ${input} py-1.5`}
           />
           <button
             onClick={handleGuardarPresupuesto}
             disabled={guardando}
-            className="text-xs font-medium text-blue-600 px-2 disabled:opacity-50"
+            className={`px-3 text-xs ${buttonPrimary}`}
           >
             Guardar
           </button>
@@ -118,13 +115,13 @@ export default function Resumen({ reloadTrigger }: Props) {
 
         {presupuesto !== null && (
           <div>
-            <div className="h-2 bg-gray-100 rounded">
+            <div className="h-2 bg-gray-700 rounded">
               <div
-                className={`h-2 rounded ${excedido ? "bg-red-500" : "bg-green-500"}`}
+                className={`h-2 rounded ${excedido ? "bg-red-500" : "bg-emerald-500"}`}
                 style={{ width: `${porcentajePresupuesto}%` }}
               />
             </div>
-            <p className={`text-xs mt-1 ${excedido ? "text-red-600" : "text-gray-600"}`}>
+            <p className={`text-xs mt-1 ${excedido ? "text-red-400" : "text-gray-400"}`}>
               ${resumen.totalMes.toFixed(2)} de ${presupuesto.toFixed(2)}
               {excedido ? " — superaste el presupuesto" : ""}
             </p>

@@ -1,6 +1,7 @@
 import { useState, type FormEvent } from "react";
 import { apiFetch, ApiError } from "../lib/api";
 import type { Categoria } from "../lib/types";
+import { card, label, input, buttonPrimary, errorBanner } from "../lib/ui";
 
 interface Props {
   categorias: Categoria[];
@@ -68,14 +69,14 @@ export default function FormularioGasto({ categorias, onCategoriaCreada, onGasto
   }
 
   return (
-    <form onSubmit={handleSubmit} className="bg-white rounded-lg shadow p-4 space-y-3">
-      <h2 className="text-sm font-semibold text-gray-900">Registrar gasto</h2>
+    <form onSubmit={handleSubmit} className={`p-4 space-y-3 ${card}`}>
+      <h2 className="text-sm font-semibold text-gray-100">Registrar gasto</h2>
 
-      {error && <p className="text-sm text-red-600 bg-red-50 rounded p-2">{error}</p>}
+      {error && <p className={errorBanner}>{error}</p>}
 
       <div className="grid grid-cols-2 gap-3">
         <div>
-          <label className="block text-xs font-medium text-gray-700 mb-1">Monto</label>
+          <label className={label}>Monto</label>
           <input
             type="number"
             step="0.01"
@@ -83,27 +84,27 @@ export default function FormularioGasto({ categorias, onCategoriaCreada, onGasto
             required
             value={monto}
             onChange={(e) => setMonto(e.target.value)}
-            className="w-full rounded border border-gray-300 px-3 py-2 text-sm"
+            className={input}
           />
         </div>
         <div>
-          <label className="block text-xs font-medium text-gray-700 mb-1">Fecha</label>
+          <label className={label}>Fecha</label>
           <input
             type="date"
             required
             value={fecha}
             onChange={(e) => setFecha(e.target.value)}
-            className="w-full rounded border border-gray-300 px-3 py-2 text-sm"
+            className={input}
           />
         </div>
       </div>
 
       <div>
-        <label className="block text-xs font-medium text-gray-700 mb-1">Categoría</label>
+        <label className={label}>Categoría</label>
         <select
           value={categoriaId}
           onChange={(e) => setCategoriaId(e.target.value)}
-          className="w-full rounded border border-gray-300 px-3 py-2 text-sm"
+          className={input}
         >
           <option value="">Elegí una categoría</option>
           {categorias.map((c) => (
@@ -117,12 +118,12 @@ export default function FormularioGasto({ categorias, onCategoriaCreada, onGasto
             placeholder="Nueva categoría..."
             value={nuevaCategoria}
             onChange={(e) => setNuevaCategoria(e.target.value)}
-            className="flex-1 rounded border border-gray-300 px-3 py-1.5 text-xs"
+            className={`flex-1 ${input} py-1.5 text-xs`}
           />
           <button
             type="button"
             onClick={handleCrearCategoria}
-            className="text-xs font-medium text-blue-600 px-2"
+            className="text-xs font-medium text-emerald-400 hover:text-emerald-300 px-2"
           >
             + agregar
           </button>
@@ -130,19 +131,11 @@ export default function FormularioGasto({ categorias, onCategoriaCreada, onGasto
       </div>
 
       <div>
-        <label className="block text-xs font-medium text-gray-700 mb-1">Nota (opcional)</label>
-        <input
-          value={nota}
-          onChange={(e) => setNota(e.target.value)}
-          className="w-full rounded border border-gray-300 px-3 py-2 text-sm"
-        />
+        <label className={label}>Nota (opcional)</label>
+        <input value={nota} onChange={(e) => setNota(e.target.value)} className={input} />
       </div>
 
-      <button
-        type="submit"
-        disabled={cargando}
-        className="w-full bg-blue-600 text-white rounded py-2 text-sm font-medium disabled:opacity-50"
-      >
+      <button type="submit" disabled={cargando} className={`w-full ${buttonPrimary}`}>
         {cargando ? "Guardando..." : "Registrar gasto"}
       </button>
     </form>
