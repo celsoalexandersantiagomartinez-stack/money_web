@@ -2,6 +2,7 @@ import { Router } from "express";
 import bcrypt from "bcryptjs";
 import jwt from "jsonwebtoken";
 import { prisma } from "../lib/prisma.js";
+import { requireAuth, type AuthRequest } from "../middleware/auth.js";
 
 const router = Router();
 
@@ -57,6 +58,15 @@ router.post("/login", async (req, res) => {
   const token = jwt.sign({ sub: usuario.id }, JWT_SECRET, { expiresIn: "7d" });
 
   return res.json({ token });
+});
+
+router.get("/me", requireAuth, async (req: AuthRequest, res) => {
+  const usuario = await prisma.usuario.findUnique({ where: { id: req.usuarioId } });
+  if (!usuario) {
+    return res.status(404).json({ error: "Usuario no encontrado." });
+  }
+
+  return res.json({ id: usuario.id, nombre: usuario.nombre, correo: usuario.correo });
 });
 
 export default router;
