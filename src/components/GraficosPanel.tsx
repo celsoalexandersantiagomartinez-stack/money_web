@@ -2,7 +2,6 @@ import { useEffect, useState } from "react";
 import { apiFetch, ApiError } from "../lib/api";
 import { card, errorBanner } from "../lib/ui";
 import { colorDeCategoria } from "../lib/colores";
-import type { Gasto } from "../lib/types";
 
 interface SerieDia {
   fecha: string;
@@ -25,36 +24,22 @@ const ALTO = 220;
 export default function GraficosPanel({ onClose }: Props) {
   const [desde, setDesde] = useState(() => hoyMenosDias(29));
   const [hasta, setHasta] = useState(() => hoyMenosDias(0));
-  const [vista, setVista] = useState<"barras" | "puntos">("barras");
+  const [vista, setVista] = useState<"barras" | "circular">("barras");
   const [serie, setSerie] = useState<SerieDia[]>([]);
-  const [gastos, setGastos] = useState<Gasto[]>([]);
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
     const params = new URLSearchParams({ desde, hasta });
-    Promise.all([
-      apiFetch<SerieDia[]>(`/gastos/serie?${params.toString()}`),
-      apiFetch<Gasto[]>(`/gastos?${params.toString()}`),
-    ])
-      .then(([serieData, gastosData]) => {
-        setSerie(serieData);
-        setGastos(gastosData);
-      })
+    apiFetch<SerieDia[]>(`/gastos/serie?${params.toString()}`)
+      .then(setSerie)
       .catch((err) =>
         setError(err instanceof ApiError ? err.message : "No se pudieron cargar los gráficos."),
       );
   }, [desde, hasta]);
 
-  const categoriasPresentes = Array.from(
-    new Set(
-      vista === "barras"
-        ? serie.flatMap((d) => d.categorias.map((c) => c.categoria))
-        : gastos.map((g) => g.categoria.nombre),
-    ),
-  );
   const colorPorNombre = new Map<string, string | null>();
   serie.forEach((d) => d.categorias.forEach((c) => colorPorNombre.set(c.categoria, c.color)));
-  gastos.forEach((g) => colorPorNombre.set(g.categoria.nombre, g.categoria.color));
+  const categoriasPresentes = Array.from(colorPorNombre.keys());
 
   return (
     <div className="fixed inset-0 bg-black/60 flex items-center justify-center p-4 z-50 overflow-y-auto">
@@ -93,17 +78,17 @@ export default function GraficosPanel({ onClose }: Props) {
               Barras por día
             </button>
             <button
-              onClick={() => setVista("puntos")}
+              onClick={() => setVista("circular")}
               className={`px-3 py-1 text-xs ${
-                vista === "puntos" ? "bg-emerald-600 text-white" : "text-gray-300"
+                vista === "circular" ? "bg-emerald-600 text-white" : "text-gray-300"
               }`}
             >
-              Puntos
+              Circular
             </button>
           </div>
         </div>
 
-        {vista === "barras" ? <GraficoBarras serie={serie} /> : <GraficoPuntos gastos={gastos} />}
+        {vista === "barras" ? <GraficoBarras serie={serie} /> : <GraficoCircular serie={serie} />}
 
         {categoriasPresentes.length > 0 && (
           <ul className="flex flex-wrap gap-3">
@@ -176,44 +161,61 @@ function GraficoBarras({ serie }: { serie: SerieDia[] }) {
   );
 }
 
-function GraficoPuntos({ gastos }: { gastos: Gasto[] }) {
-  if (gastos.length === 0) {
+function GraficoCircular({ serie }: { serie: SerieDia[] }) {
+  const totales = new Map<string, { total: number; color: string | null }>();
+  serie.forEach((d) =>
+    d.categorias.forEach((c) => {
+      const previo = totales.get(c.categoria);
+      totales.set(c.categoria, {
+        total: (previo?.total ?? 0) + c.total,
+        color: c.color,
+      });
+    }),
+  );
+
+  const entradas = Array.from(totales.entries());
+  const total = entradas.reduce((acc, [, d]) => acc + d.total, 0);
+
+  if (total === 0) {
     return <p className="text-sm text-gray-500 py-8 text-center">No hay gastos en este rango.</p>;
   }
 
-  const fechas = gastos.map((g) => new Date(g.fecha).getTime());
-  const minFecha = Math.min(...fechas);
-  const maxFecha = Math.max(...fechas);
-  const rangoFecha = Math.max(1, maxFecha - minFecha);
-  const maxMonto = Math.max(1, ...gastos.map((g) => Number(g.monto)));
-  const zona = ALTO - 24;
+  const cx = ANCHO / 2;
+  const cy = ALTO / 2;
+  const r = Math.min(ALTO, ANCHO / 2) / 2 - 10;
+  const grosor = 32;
+  const circunferencia = 2 * Math.PI * r;
+  let acumulado = 0;
 
   return (
     <svg viewBox={`0 0 ${ANCHO} ${ALTO}`} className="w-full" style={{ height: ALTO }}>
-      <line x1={0} y1={zona} x2={ANCHO} y2={zona} stroke="#374151" strokeWidth={1} />
-      {gastos.map((g) => {
-        const t = new Date(g.fecha).getTime();
-        const x = ((t - minFecha) / rangoFecha) * (ANCHO - 20) + 10;
-        const y = zona - (Number(g.monto) / maxMonto) * zona * 0.95;
-        const opcion = colorDeCategoria(g.categoria.color);
-        return (
-          <circle
-            key={g.id}
-            cx={x}
-            cy={y}
-            r={5}
-            fill={opcion.hex}
-            fillOpacity={0.85}
-            stroke="#111827"
-            strokeWidth={1}
-          />
-        );
-      })}
-      <text x={8} y={12} fontSize={9} fill="#898781">
-        ${maxMonto.toFixed(0)}
+      <g transform={`rotate(-90 ${cx} ${cy})`}>
+        {entradas.map(([nombre, datos]) => {
+          const pct = datos.total / total;
+          const dash = pct * circunferencia;
+          const offset = -acumulado * circunferencia;
+          acumulado += pct;
+          const opcion = colorDeCategoria(datos.color);
+          return (
+            <circle
+              key={nombre}
+              cx={cx}
+              cy={cy}
+              r={r}
+              fill="none"
+              stroke={opcion.hex}
+              strokeWidth={grosor}
+              strokeDasharray={`${dash} ${circunferencia - dash}`}
+              strokeDashoffset={offset}
+            />
+          );
+        })}
+      </g>
+      <text x={cx} y={cy - 6} textAnchor="middle" fontSize={16} fill="#f3f4f6" fontWeight={600}>
+        ${total.toFixed(0)}
       </text>
-      <text x={8} y={zona - 4} fontSize={9} fill="#898781">
-        $0
+      <text x={cx} y={cy + 12} textAnchor="middle" fontSize={10} fill="#898781">
+        total del rango
       </text>
     </svg>
   );

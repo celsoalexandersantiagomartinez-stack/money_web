@@ -82,7 +82,12 @@ export default function Resumen({ reloadTrigger }: Props) {
           <div key={c.categoria}>
             <div className="flex justify-between text-xs text-gray-400 mb-1">
               <span>{c.categoria}</span>
-              <span>${c.total.toFixed(2)}</span>
+              <span>
+                ${c.total.toFixed(2)}{" "}
+                <span className="text-gray-500">
+                  ({resumen.totalMes > 0 ? ((c.total / resumen.totalMes) * 100).toFixed(0) : 0}%)
+                </span>
+              </span>
             </div>
             <div className="h-2 bg-gray-700 rounded">
               <div
@@ -127,8 +132,13 @@ export default function Resumen({ reloadTrigger }: Props) {
             </p>
             <p className={`text-xs font-medium ${excedido ? "text-red-400" : "text-emerald-400"}`}>
               {excedido
-                ? `Te pasaste por $${(resumen.totalMes - presupuesto).toFixed(2)}`
-                : `Te quedan $${(presupuesto - resumen.totalMes).toFixed(2)} disponibles`}
+                ? `Te pasaste por $${(resumen.totalMes - presupuesto).toFixed(2)} (${(
+                    ((resumen.totalMes - presupuesto) / presupuesto) *
+                    100
+                  ).toFixed(0)}% de exceso)`
+                : `Te quedan $${(presupuesto - resumen.totalMes).toFixed(2)} disponibles (${(
+                    100 - porcentajePresupuesto!
+                  ).toFixed(0)}% del presupuesto)`}
             </p>
           </div>
         )}
