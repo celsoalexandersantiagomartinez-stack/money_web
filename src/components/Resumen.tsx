@@ -1,10 +1,11 @@
 import { useEffect, useState } from "react";
 import { apiFetch, ApiError } from "../lib/api";
 import { card, errorBanner, input, buttonPrimary } from "../lib/ui";
+import { colorDeCategoria } from "../lib/colores";
 
 interface ResumenData {
   totalMes: number;
-  porCategoria: { categoria: string; total: number }[];
+  porCategoria: { categoria: string; total: number; color: string | null }[];
 }
 
 interface Props {
@@ -85,7 +86,7 @@ export default function Resumen({ reloadTrigger }: Props) {
             </div>
             <div className="h-2 bg-gray-700 rounded">
               <div
-                className="h-2 bg-blue-500 rounded"
+                className={`h-2 rounded ${colorDeCategoria(c.color).bar}`}
                 style={{ width: `${(c.total / maxCategoria) * 100}%` }}
               />
             </div>
@@ -123,7 +124,11 @@ export default function Resumen({ reloadTrigger }: Props) {
             </div>
             <p className={`text-xs mt-1 ${excedido ? "text-red-400" : "text-gray-400"}`}>
               ${resumen.totalMes.toFixed(2)} de ${presupuesto.toFixed(2)}
-              {excedido ? " — superaste el presupuesto" : ""}
+            </p>
+            <p className={`text-xs font-medium ${excedido ? "text-red-400" : "text-emerald-400"}`}>
+              {excedido
+                ? `Te pasaste por $${(resumen.totalMes - presupuesto).toFixed(2)}`
+                : `Te quedan $${(presupuesto - resumen.totalMes).toFixed(2)} disponibles`}
             </p>
           </div>
         )}

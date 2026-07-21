@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { apiFetch, ApiError } from "../lib/api";
 import type { Categoria, Gasto } from "../lib/types";
 import { card, errorBanner } from "../lib/ui";
+import { colorDeCategoria } from "../lib/colores";
 
 interface Props {
   categorias: Categoria[];
@@ -80,7 +81,8 @@ export default function ListaGastos({ categorias, reloadTrigger }: Props) {
         {gastos.map((g) => (
           <li key={g.id} className="py-2 flex items-center justify-between text-sm">
             <div>
-              <p className="font-medium text-gray-100">
+              <p className="font-medium text-gray-100 flex items-center gap-2">
+                <span className={`h-2 w-2 rounded-full ${colorDeCategoria(g.categoria.color).dot}`} />
                 ${Number(g.monto).toFixed(2)} — {g.categoria.nombre}
               </p>
               <p className="text-xs text-gray-500">

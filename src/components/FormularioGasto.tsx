@@ -74,31 +74,6 @@ export default function FormularioGasto({ categorias, onCategoriaCreada, onGasto
 
       {error && <p className={errorBanner}>{error}</p>}
 
-      <div className="grid grid-cols-2 gap-3">
-        <div>
-          <label className={label}>Monto</label>
-          <input
-            type="number"
-            step="0.01"
-            min="0"
-            required
-            value={monto}
-            onChange={(e) => setMonto(e.target.value)}
-            className={input}
-          />
-        </div>
-        <div>
-          <label className={label}>Fecha</label>
-          <input
-            type="date"
-            required
-            value={fecha}
-            onChange={(e) => setFecha(e.target.value)}
-            className={input}
-          />
-        </div>
-      </div>
-
       <div>
         <label className={label}>Categoría</label>
         <select
@@ -127,6 +102,31 @@ export default function FormularioGasto({ categorias, onCategoriaCreada, onGasto
           >
             + agregar
           </button>
+        </div>
+      </div>
+
+      <div className="grid grid-cols-2 gap-3">
+        <div>
+          <label className={label}>Monto</label>
+          <input
+            type="number"
+            step="0.01"
+            min="0"
+            required
+            value={monto}
+            onChange={(e) => setMonto(e.target.value)}
+            className={input}
+          />
+        </div>
+        <div>
+          <label className={label}>Fecha</label>
+          <input
+            type="date"
+            required
+            value={fecha}
+            onChange={(e) => setFecha(e.target.value)}
+            className={input}
+          />
         </div>
       </div>
 
