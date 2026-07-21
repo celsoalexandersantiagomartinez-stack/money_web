@@ -3,6 +3,7 @@ import path from "node:path";
 import { fileURLToPath } from "node:url";
 import authRouter from "./routes/auth.js";
 import usuarioRouter from "./routes/usuario.js";
+import categoriasRouter from "./routes/categorias.js";
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 
@@ -11,6 +12,7 @@ app.use(express.json());
 
 app.use("/api/auth", authRouter);
 app.use("/api/usuario", usuarioRouter);
+app.use("/api/categorias", categoriasRouter);
 
 // Sirve el frontend ya compilado (llega en la Fase 4/5). En desarrollo
 // esta carpeta todavía no existe, así que no afecta nada por ahora.
