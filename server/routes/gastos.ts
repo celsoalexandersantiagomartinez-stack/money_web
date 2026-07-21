@@ -1,4 +1,5 @@
 import { Router } from "express";
+import { Prisma } from "@prisma/client";
 import { prisma } from "../lib/prisma.js";
 import { requireAuth, type AuthRequest } from "../middleware/auth.js";
 
@@ -38,8 +39,38 @@ router.post("/", async (req: AuthRequest, res) => {
 });
 
 router.get("/", async (req: AuthRequest, res) => {
+  const { desde, hasta, categoriaId } = req.query;
+
+  const where: Prisma.GastoWhereInput = { usuarioId: req.usuarioId };
+
+  if (categoriaId !== undefined) {
+    const catId = Number(categoriaId);
+    if (Number.isNaN(catId)) {
+      return res.status(400).json({ error: "categoriaId debe ser un número." });
+    }
+    where.categoriaId = catId;
+  }
+
+  if (desde !== undefined || hasta !== undefined) {
+    where.fecha = {};
+    if (desde !== undefined) {
+      const desdeFecha = new Date(String(desde));
+      if (Number.isNaN(desdeFecha.getTime())) {
+        return res.status(400).json({ error: "desde no es una fecha válida." });
+      }
+      where.fecha.gte = desdeFecha;
+    }
+    if (hasta !== undefined) {
+      const hastaFecha = new Date(String(hasta));
+      if (Number.isNaN(hastaFecha.getTime())) {
+        return res.status(400).json({ error: "hasta no es una fecha válida." });
+      }
+      where.fecha.lte = hastaFecha;
+    }
+  }
+
   const gastos = await prisma.gasto.findMany({
-    where: { usuarioId: req.usuarioId },
+    where,
     include: { categoria: true },
     orderBy: { fecha: "desc" },
   });
