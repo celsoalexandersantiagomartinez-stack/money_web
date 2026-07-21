@@ -1,12 +1,9 @@
 import express from "express";
 import path from "node:path";
-import { fileURLToPath } from "node:url";
 import authRouter from "./routes/auth.js";
 import usuarioRouter from "./routes/usuario.js";
 import categoriasRouter from "./routes/categorias.js";
 import gastosRouter from "./routes/gastos.js";
-
-const __dirname = path.dirname(fileURLToPath(import.meta.url));
 
 const app = express();
 app.use(express.json());
@@ -16,9 +13,11 @@ app.use("/api/usuario", usuarioRouter);
 app.use("/api/categorias", categoriasRouter);
 app.use("/api/gastos", gastosRouter);
 
-// Sirve el frontend ya compilado (llega en la Fase 4/5). En desarrollo
-// esta carpeta todavía no existe, así que no afecta nada por ahora.
-const clientDist = path.join(__dirname, "..", "dist", "client");
+// Sirve el frontend ya compilado. Usamos process.cwd() (siempre la raíz
+// del proyecto, tanto en "npm run dev" como en "npm start") en vez de
+// __dirname, porque __dirname cambia según si el código corre desde
+// server/ (dev, sin compilar) o desde dist/server/ (compilado en prod).
+const clientDist = path.join(process.cwd(), "dist", "client");
 app.use(express.static(clientDist));
 app.get("/*splat", (req, res, next) => {
   if (req.path.startsWith("/api")) return next();
