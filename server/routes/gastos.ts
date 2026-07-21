@@ -78,4 +78,19 @@ router.get("/", async (req: AuthRequest, res) => {
   res.json(gastos);
 });
 
+router.delete("/:id", async (req: AuthRequest, res) => {
+  const id = Number(req.params.id);
+  if (Number.isNaN(id)) {
+    return res.status(400).json({ error: "id inválido." });
+  }
+
+  const gasto = await prisma.gasto.findUnique({ where: { id } });
+  if (!gasto || gasto.usuarioId !== req.usuarioId) {
+    return res.status(404).json({ error: "Gasto no encontrado." });
+  }
+
+  await prisma.gasto.delete({ where: { id } });
+  res.status(204).send();
+});
+
 export default router;
