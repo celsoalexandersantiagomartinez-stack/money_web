@@ -14,14 +14,19 @@ model Usuario {
   contrasenaHash    String
   presupuestoMensual Decimal? @db.Decimal(10, 2)
   gastos            Gasto[]
+  categorias        Categoria[]
   creadoEn          DateTime  @default(now())
 }
 
 model Categoria {
-  id     Int     @id @default(autoincrement())
-  nombre String  @unique
-  color  String?
-  gastos Gasto[]
+  id        Int      @id @default(autoincrement())
+  nombre    String
+  color     String?
+  usuario   Usuario  @relation(fields: [usuarioId], references: [id])
+  usuarioId Int
+  gastos    Gasto[]
+
+  @@unique([usuarioId, nombre])
 }
 
 model Gasto {

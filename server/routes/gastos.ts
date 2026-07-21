@@ -21,7 +21,7 @@ router.post("/", async (req: AuthRequest, res) => {
   }
 
   const categoria = await prisma.categoria.findUnique({ where: { id: categoriaId } });
-  if (!categoria) {
+  if (!categoria || categoria.usuarioId !== req.usuarioId) {
     return res.status(404).json({ error: "La categoría indicada no existe." });
   }
 
