@@ -114,17 +114,37 @@ function GraficoBarras({ serie }: { serie: SerieDia[] }) {
   }
 
   const maxTotal = Math.max(1, ...serie.map((d) => d.categorias.reduce((acc, c) => acc + c.total, 0)));
-  const slot = ANCHO / serie.length;
+  const margenIzq = 52;
+  const anchoBarras = ANCHO - margenIzq;
+  const slot = anchoBarras / serie.length;
   const barWidth = Math.min(36, slot * 0.6);
   const zonaBarras = ALTO - 24;
   const cadaCuanto = Math.max(1, Math.ceil(serie.length / 8));
 
   return (
     <svg viewBox={`0 0 ${ANCHO} ${ALTO}`} className="w-full" style={{ height: ALTO }}>
-      <line x1={0} y1={zonaBarras} x2={ANCHO} y2={zonaBarras} stroke="#374151" strokeWidth={1} />
+      {[0, 0.5, 1].map((frac) => {
+        const y = zonaBarras - zonaBarras * 0.95 * frac;
+        return (
+          <g key={frac}>
+            <line
+              x1={margenIzq}
+              y1={y}
+              x2={ANCHO}
+              y2={y}
+              stroke="#374151"
+              strokeWidth={1}
+              strokeDasharray={frac === 0 ? undefined : "3 3"}
+            />
+            <text x={margenIzq - 6} y={y + 3} fontSize={9} fill="#898781" textAnchor="end">
+              ${(maxTotal * frac).toFixed(0)}
+            </text>
+          </g>
+        );
+      })}
       {serie.map((dia, i) => {
         let y = zonaBarras;
-        const x = i * slot + (slot - barWidth) / 2;
+        const x = margenIzq + i * slot + (slot - barWidth) / 2;
         return (
           <g key={dia.fecha}>
             {dia.categorias.map((cat) => {
@@ -180,15 +200,16 @@ function GraficoCircular({ serie }: { serie: SerieDia[] }) {
     return <p className="text-sm text-gray-500 py-8 text-center">No hay gastos en este rango.</p>;
   }
 
+  const ALTO_CIRCULAR = 300;
   const cx = ANCHO / 2;
-  const cy = ALTO / 2;
-  const r = Math.min(ALTO, ANCHO / 2) / 2 - 10;
-  const grosor = 32;
+  const cy = ALTO_CIRCULAR / 2;
+  const r = 110;
+  const grosor = 34;
   const circunferencia = 2 * Math.PI * r;
   let acumulado = 0;
 
   return (
-    <svg viewBox={`0 0 ${ANCHO} ${ALTO}`} className="w-full" style={{ height: ALTO }}>
+    <svg viewBox={`0 0 ${ANCHO} ${ALTO_CIRCULAR}`} className="w-full" style={{ height: ALTO_CIRCULAR }}>
       <g transform={`rotate(-90 ${cx} ${cy})`}>
         {entradas.map(([nombre, datos]) => {
           const pct = datos.total / total;
