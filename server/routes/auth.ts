@@ -66,7 +66,12 @@ router.get("/me", requireAuth, async (req: AuthRequest, res) => {
     return res.status(404).json({ error: "Usuario no encontrado." });
   }
 
-  return res.json({ id: usuario.id, nombre: usuario.nombre, correo: usuario.correo });
+  return res.json({
+    id: usuario.id,
+    nombre: usuario.nombre,
+    correo: usuario.correo,
+    presupuestoMensual: usuario.presupuestoMensual,
+  });
 });
 
 export default router;
