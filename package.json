@@ -1,0 +1,13 @@
+{
+  "name": "money-web",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "engines": {
+    "node": ">=20"
+  },
+  "scripts": {
+    "dev": "echo 'TODO: se define en la Fase 3 (backend) y Fase 4 (frontend)' && exit 1",
+    "build": "echo 'TODO: se define en la Fase 5 (despliegue)' && exit 1"
+  }
+}
