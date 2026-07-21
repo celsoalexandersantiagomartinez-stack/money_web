@@ -93,18 +93,85 @@ router.get("/resumen", async (req: AuthRequest, res) => {
 
   const totalMes = gastosDelMes.reduce((acc, g) => acc + Number(g.monto), 0);
 
-  const porCategoriaMap = new Map<string, number>();
+  const porCategoriaMap = new Map<string, { total: number; color: string | null }>();
   for (const g of gastosDelMes) {
     const nombre = g.categoria.nombre;
-    porCategoriaMap.set(nombre, (porCategoriaMap.get(nombre) ?? 0) + Number(g.monto));
+    const previo = porCategoriaMap.get(nombre);
+    porCategoriaMap.set(nombre, {
+      total: (previo?.total ?? 0) + Number(g.monto),
+      color: g.categoria.color,
+    });
   }
 
-  const porCategoria = Array.from(porCategoriaMap.entries()).map(([categoria, total]) => ({
+  const porCategoria = Array.from(porCategoriaMap.entries()).map(([categoria, datos]) => ({
     categoria,
-    total,
+    total: datos.total,
+    color: datos.color,
   }));
 
   res.json({ totalMes, porCategoria });
+});
+
+router.get("/serie", async (req: AuthRequest, res) => {
+  const { desde, hasta } = req.query;
+
+  let desdeFecha: Date;
+  if (desde !== undefined) {
+    desdeFecha = new Date(String(desde));
+    if (Number.isNaN(desdeFecha.getTime())) {
+      return res.status(400).json({ error: "desde no es una fecha válida." });
+    }
+  } else {
+    desdeFecha = new Date();
+    desdeFecha.setDate(desdeFecha.getDate() - 29);
+  }
+
+  let hastaFecha: Date;
+  if (hasta !== undefined) {
+    hastaFecha = new Date(String(hasta));
+    if (Number.isNaN(hastaFecha.getTime())) {
+      return res.status(400).json({ error: "hasta no es una fecha válida." });
+    }
+  } else {
+    hastaFecha = new Date();
+  }
+
+  const gastos = await prisma.gasto.findMany({
+    where: {
+      usuarioId: req.usuarioId,
+      fecha: { gte: desdeFecha, lte: hastaFecha },
+    },
+    include: { categoria: true },
+    orderBy: { fecha: "asc" },
+  });
+
+  const porDiaMap = new Map<string, Map<string, { total: number; color: string | null }>>();
+  for (const g of gastos) {
+    const dia = g.fecha.toISOString().slice(0, 10);
+    const nombreCategoria = g.categoria.nombre;
+    if (!porDiaMap.has(dia)) {
+      porDiaMap.set(dia, new Map());
+    }
+    const categoriasDelDia = porDiaMap.get(dia)!;
+    const previo = categoriasDelDia.get(nombreCategoria);
+    categoriasDelDia.set(nombreCategoria, {
+      total: (previo?.total ?? 0) + Number(g.monto),
+      color: g.categoria.color,
+    });
+  }
+
+  const serie = Array.from(porDiaMap.entries())
+    .map(([fecha, categoriasMap]) => ({
+      fecha,
+      categorias: Array.from(categoriasMap.entries()).map(([categoria, datos]) => ({
+        categoria,
+        total: datos.total,
+        color: datos.color,
+      })),
+    }))
+    .sort((a, b) => a.fecha.localeCompare(b.fecha));
+
+  res.json(serie);
 });
 
 router.delete("/:id", async (req: AuthRequest, res) => {

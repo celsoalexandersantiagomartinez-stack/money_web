@@ -20,6 +20,7 @@ model Usuario {
 model Categoria {
   id     Int     @id @default(autoincrement())
   nombre String  @unique
+  color  String?
   gastos Gasto[]
 }
 
