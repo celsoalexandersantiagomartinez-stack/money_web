@@ -78,6 +78,35 @@ router.get("/", async (req: AuthRequest, res) => {
   res.json(gastos);
 });
 
+router.get("/resumen", async (req: AuthRequest, res) => {
+  const ahora = new Date();
+  const inicioMes = new Date(ahora.getFullYear(), ahora.getMonth(), 1);
+  const inicioMesSiguiente = new Date(ahora.getFullYear(), ahora.getMonth() + 1, 1);
+
+  const gastosDelMes = await prisma.gasto.findMany({
+    where: {
+      usuarioId: req.usuarioId,
+      fecha: { gte: inicioMes, lt: inicioMesSiguiente },
+    },
+    include: { categoria: true },
+  });
+
+  const totalMes = gastosDelMes.reduce((acc, g) => acc + Number(g.monto), 0);
+
+  const porCategoriaMap = new Map<string, number>();
+  for (const g of gastosDelMes) {
+    const nombre = g.categoria.nombre;
+    porCategoriaMap.set(nombre, (porCategoriaMap.get(nombre) ?? 0) + Number(g.monto));
+  }
+
+  const porCategoria = Array.from(porCategoriaMap.entries()).map(([categoria, total]) => ({
+    categoria,
+    total,
+  }));
+
+  res.json({ totalMes, porCategoria });
+});
+
 router.delete("/:id", async (req: AuthRequest, res) => {
   const id = Number(req.params.id);
   if (Number.isNaN(id)) {
